@@ -1,0 +1,30 @@
+package com.mgudux.mail2ticket.domain.entities;
+
+import lombok.Getter;
+
+import static java.util.Arrays.stream;
+
+@Getter
+public enum ProcessingStatus {
+    SUCCESS("Success", "Ticket extraction and analysis success!"),
+    MANUAL_CHECK_REQUIRED("Manual Check Required", "Ticket requires manual check");
+
+    private final String displayName;
+    private final String message;
+
+    ProcessingStatus(String displayName, String message) {
+        this.displayName = displayName;
+        this.message = message;
+    }
+
+    public boolean isReviewRequired() {
+        return this == MANUAL_CHECK_REQUIRED;
+    }
+
+    public static ProcessingStatus fromString(String value) {
+        return stream(ProcessingStatus.values())
+                .filter(status -> status.name().equalsIgnoreCase(value))
+                .findFirst()
+                .orElse(MANUAL_CHECK_REQUIRED);
+    }
+}
