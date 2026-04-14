@@ -47,7 +47,7 @@ public class Customer {
     private LocalDateTime updated;
 
     @OneToMany(mappedBy = "customer")
-    private List<Email> emails = new ArrayList<>();
+    private List<EmlFile> emails = new ArrayList<>();
 
     @OneToMany(mappedBy = "customer")
     private List<Ticket> tickets = new ArrayList<>();

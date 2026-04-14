@@ -1,7 +1,5 @@
 package com.mgudux.mail2ticket.domain.dto;
 
-import com.mgudux.mail2ticket.domain.entities.ProcessingStatus;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -13,7 +11,7 @@ public class CustomerDto {
             UUID id,
             String firstName,
             String lastName,
-            ProcessingStatus userEmail
+            String userEmail
     ) {}
 
     public record Detail(
@@ -21,7 +19,7 @@ public class CustomerDto {
             String firstName,
             String lastName,
             String userEmail,
-            List<EmailDto.Summary> emails,
+            List<EmlFileDto.Summary> emails,
             Double emailProgress,
             // total emails minus emails where ProcessingStatus is MANUAL_CHECK_REQUIRED
             List<TicketDto.Summary> tickets,

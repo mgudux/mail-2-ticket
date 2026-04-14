@@ -14,4 +14,8 @@ public enum TicketStatus {
     TicketStatus(String status) {
         this.status = status;
     }
+
+    public boolean isCompleted() {
+        return (this == RESOLVED || this == CLOSED);
+    }
 }

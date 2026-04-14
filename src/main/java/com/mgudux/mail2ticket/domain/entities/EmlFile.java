@@ -2,6 +2,7 @@ package com.mgudux.mail2ticket.domain.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "emails")
-public class Email {
+public class EmlFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -26,12 +27,12 @@ public class Email {
     private UUID id;
 
     @NotBlank
-    @jakarta.validation.constraints.Email
+    @Email
     @Column(name = "sender_email", nullable = false)
     private String senderEmail;
 
     @NotBlank
-    @jakarta.validation.constraints.Email
+    @Email
     @Column(name = "receiver_email", nullable = false)
     private String receiverEmail;
 
@@ -43,12 +44,6 @@ public class Email {
 
     @Column(name = "raw_email_s3key")
     private String rawEmailS3Key;
-
-    @Column(name = "attachment_s3_keys")
-    @ElementCollection List<String> attachmentS3Keys;
-
-    @Column(name = "attachment_ocr")
-    private String attachmentOCR;
 
     // Was this email successfully extracted into a Ticket?
     @Enumerated(EnumType.STRING)
@@ -79,8 +74,8 @@ public class Email {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        Email email = (Email) o;
-        return attachmentS3Keys == email.attachmentS3Keys && Objects.equals(id, email.id) && Objects.equals(senderEmail, email.senderEmail) && Objects.equals(receiverEmail, email.receiverEmail) && Objects.equals(subject, email.subject) && Objects.equals(body, email.body) && Objects.equals(rawEmailS3Key, email.rawEmailS3Key) && Objects.equals(attachmentOCR, email.attachmentOCR) && processingStatus == email.processingStatus && Objects.equals(errorMessage, email.errorMessage) && Objects.equals(uploadBatchId, email.uploadBatchId) && Objects.equals(created, email.created) && Objects.equals(updated, email.updated);
+        EmlFile emlFile = (EmlFile) o;
+        return Objects.equals(id, emlFile.id) && Objects.equals(senderEmail, emlFile.senderEmail) && Objects.equals(receiverEmail, emlFile.receiverEmail) && Objects.equals(subject, emlFile.subject) && Objects.equals(body, emlFile.body) && Objects.equals(rawEmailS3Key, emlFile.rawEmailS3Key) && processingStatus == emlFile.processingStatus && Objects.equals(errorMessage, emlFile.errorMessage) && Objects.equals(uploadBatchId, emlFile.uploadBatchId) && Objects.equals(created, emlFile.created) && Objects.equals(updated, emlFile.updated) && Objects.equals(ticket, emlFile.ticket) && Objects.equals(customer, emlFile.customer);
     }
 
     @Override
@@ -97,8 +92,6 @@ public class Email {
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +
                 ", rawContent='" + rawEmailS3Key + '\'' +
-                ", attachmentS3Keys=" + attachmentS3Keys +
-                ", attachmentOCR='" + attachmentOCR + '\'' +
                 ", processingStatus=" + processingStatus +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", uploadBatchId='" + uploadBatchId + '\'' +

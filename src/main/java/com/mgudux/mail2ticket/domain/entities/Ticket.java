@@ -65,7 +65,7 @@ public class Ticket {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email_id")
-    private Email email;
+    private EmlFile email;
 
     @PrePersist
     protected void onCreate() {

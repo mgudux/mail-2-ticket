@@ -7,9 +7,8 @@ import java.util.UUID;
 public class TicketDto {
 
     public record Summary(
-            UUID id,
             String ticketNumber,
-            String department,
+            Department department,
             TicketStatus ticketStatus,
             ProcessingStatus processingStatus
     ) {}
@@ -23,8 +22,9 @@ public class TicketDto {
             TicketStatus ticketStatus,
             ProcessingStatus processingStatus,
             String errorMessage,
-            CustomerDto.Summary customer,
-            EmailDto.Summary email
-
-    ) {}
+            UUID customerId,
+            String customerName,
+            UUID emailId,
+            String emailSubject
+            ) {}
 }
