@@ -20,6 +20,7 @@ public class Ticket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
 
     @Column(name = "ticket_number", unique = true)
@@ -62,7 +63,7 @@ public class Ticket {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "email_id")
     private Email email;
 
@@ -77,12 +78,12 @@ public class Ticket {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-        return Objects.equals(id, ticket.id) && Objects.equals(ticketNumber, ticket.ticketNumber) && Objects.equals(aiSummary, ticket.aiSummary) && ticketStatus == ticket.ticketStatus && department == ticket.department && sentiment == ticket.sentiment && processingStatus == ticket.processingStatus && Objects.equals(errorMessage, ticket.errorMessage) && Objects.equals(created, ticket.created) && Objects.equals(updated, ticket.updated) && Objects.equals(customer, ticket.customer) && Objects.equals(email, ticket.email);
+        return Objects.equals(id, ticket.id) && Objects.equals(ticketNumber, ticket.ticketNumber) && Objects.equals(aiSummary, ticket.aiSummary) && ticketStatus == ticket.ticketStatus && department == ticket.department && sentiment == ticket.sentiment && processingStatus == ticket.processingStatus && Objects.equals(errorMessage, ticket.errorMessage) && Objects.equals(created, ticket.created) && Objects.equals(updated, ticket.updated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, ticketNumber, aiSummary, ticketStatus, department, sentiment, processingStatus, errorMessage, created, updated, customer, email);
+        return getClass().hashCode();
     }
 
     @Override
@@ -98,8 +99,6 @@ public class Ticket {
                 ", errorMessage='" + errorMessage + '\'' +
                 ", created=" + created +
                 ", updated=" + updated +
-                ", customer=" + customer +
-                ", email=" + email +
                 '}';
     }
 }

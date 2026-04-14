@@ -35,8 +35,8 @@ public class Customer {
 
     @NotBlank
     @Email
-    @Column(name = "email", nullable = false, unique = true)
-    private String email;
+    @Column(name = "user_email", nullable = false, unique = true)
+    private String userEmail;
 
     @CreationTimestamp
     @Column(name = "created", nullable = false)
@@ -56,12 +56,12 @@ public class Customer {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Customer customer = (Customer) o;
-        return Objects.equals(id, customer.id) && Objects.equals(firstName, customer.firstName) && Objects.equals(lastName, customer.lastName) && Objects.equals(email, customer.email) && Objects.equals(created, customer.created) && Objects.equals(updated, customer.updated) && Objects.equals(emails, customer.emails) && Objects.equals(tickets, customer.tickets);
+        return Objects.equals(id, customer.id) && Objects.equals(firstName, customer.firstName) && Objects.equals(lastName, customer.lastName) && Objects.equals(userEmail, customer.userEmail) && Objects.equals(created, customer.created) && Objects.equals(updated, customer.updated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, created, updated, emails, tickets);
+        return getClass().hashCode();
     }
 
     @Override
@@ -70,11 +70,9 @@ public class Customer {
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
+                ", email='" + userEmail + '\'' +
                 ", created=" + created +
                 ", updated=" + updated +
-                ", emails=" + emails +
-                ", tickets=" + tickets +
                 '}';
     }
 }

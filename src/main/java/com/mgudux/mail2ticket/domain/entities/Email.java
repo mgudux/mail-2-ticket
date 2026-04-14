@@ -7,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -23,6 +22,7 @@ public class Email {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
 
     @NotBlank
@@ -41,11 +41,11 @@ public class Email {
     @Column(name = "body")
     private String body;
 
-    @Column(name = "raw_content")
-    private String rawContent;
+    @Column(name = "raw_email_s3key")
+    private String rawEmailS3Key;
 
-    @Column(name = "has_attachments")
-    private boolean hasAttachments = false;
+    @Column(name = "attachment_s3_keys")
+    @ElementCollection List<String> attachmentS3Keys;
 
     @Column(name = "attachment_ocr")
     private String attachmentOCR;
@@ -69,8 +69,8 @@ public class Email {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 
-    @OneToMany(mappedBy = "email", cascade = CascadeType.DETACH)
-    private List<Ticket> tickets = new ArrayList<>();
+    @OneToOne(mappedBy = "email", cascade = CascadeType.DETACH)
+    private Ticket ticket;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
@@ -80,12 +80,12 @@ public class Email {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Email email = (Email) o;
-        return hasAttachments == email.hasAttachments && Objects.equals(id, email.id) && Objects.equals(senderEmail, email.senderEmail) && Objects.equals(receiverEmail, email.receiverEmail) && Objects.equals(subject, email.subject) && Objects.equals(body, email.body) && Objects.equals(rawContent, email.rawContent) && Objects.equals(attachmentOCR, email.attachmentOCR) && processingStatus == email.processingStatus && Objects.equals(errorMessage, email.errorMessage) && Objects.equals(uploadBatchId, email.uploadBatchId) && Objects.equals(created, email.created) && Objects.equals(updated, email.updated) && Objects.equals(tickets, email.tickets) && Objects.equals(customer, email.customer);
+        return attachmentS3Keys == email.attachmentS3Keys && Objects.equals(id, email.id) && Objects.equals(senderEmail, email.senderEmail) && Objects.equals(receiverEmail, email.receiverEmail) && Objects.equals(subject, email.subject) && Objects.equals(body, email.body) && Objects.equals(rawEmailS3Key, email.rawEmailS3Key) && Objects.equals(attachmentOCR, email.attachmentOCR) && processingStatus == email.processingStatus && Objects.equals(errorMessage, email.errorMessage) && Objects.equals(uploadBatchId, email.uploadBatchId) && Objects.equals(created, email.created) && Objects.equals(updated, email.updated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, senderEmail, receiverEmail, subject, body, rawContent, hasAttachments, attachmentOCR, processingStatus, errorMessage, uploadBatchId, created, updated, tickets, customer);
+        return getClass().hashCode();
     }
 
     @Override
@@ -96,16 +96,14 @@ public class Email {
                 ", receiverEmail='" + receiverEmail + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +
-                ", rawContent='" + rawContent + '\'' +
-                ", hasAttachments=" + hasAttachments +
+                ", rawContent='" + rawEmailS3Key + '\'' +
+                ", attachmentS3Keys=" + attachmentS3Keys +
                 ", attachmentOCR='" + attachmentOCR + '\'' +
                 ", processingStatus=" + processingStatus +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", uploadBatchId='" + uploadBatchId + '\'' +
                 ", created=" + created +
                 ", updated=" + updated +
-                ", tickets=" + tickets +
-                ", customer=" + customer +
                 '}';
     }
 }

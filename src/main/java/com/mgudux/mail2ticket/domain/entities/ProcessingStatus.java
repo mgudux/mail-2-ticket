@@ -6,8 +6,9 @@ import static java.util.Arrays.stream;
 
 @Getter
 public enum ProcessingStatus {
-    SUCCESS("Success", "Ticket extraction and analysis success!"),
-    MANUAL_CHECK_REQUIRED("Manual Check Required", "Ticket requires manual check");
+    SUCCESS("Success", "Extraction and analysis success!"),
+    PARTIAL_SUCCESS("Partial Success", "Extraction and analysis of attachments failed"),
+    MANUAL_CHECK_REQUIRED("Manual Check Required", "Requires manual check");
 
     private final String displayName;
     private final String message;
@@ -18,7 +19,7 @@ public enum ProcessingStatus {
     }
 
     public boolean isReviewRequired() {
-        return this == MANUAL_CHECK_REQUIRED;
+        return this == MANUAL_CHECK_REQUIRED || this == PARTIAL_SUCCESS;
     }
 
     public static ProcessingStatus fromString(String value) {
