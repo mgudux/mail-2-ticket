@@ -41,6 +41,7 @@ public class TicketMapperImpl implements TicketMapper {
                 ticket.getTicketStatus(),
                 ticket.getProcessingStatus(),
                 ticket.getErrorMessage(),
+                ticket.getExcelKey(),
                 customer != null ? customer.getId() : null,
                 customer != null ? customer.getFirstName() + " " + customer.getLastName() : "Unknown",
                 emlFile != null ? emlFile.getId() : null,

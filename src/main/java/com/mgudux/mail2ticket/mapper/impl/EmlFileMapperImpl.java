@@ -42,7 +42,7 @@ public class EmlFileMapperImpl implements EmlFileMapper {
                 emlFile.getBody(),
                 emlFile.getSenderEmail(),
                 emlFile.getReceiverEmail(),
-                emlFile.getRawEmailS3Key(),
+                emlFile.getRawEmailKey(),
                 emlFile.getProcessingStatus(),
                 emlFile.getErrorMessage(),
                 emlFile.getUploadBatchId(),

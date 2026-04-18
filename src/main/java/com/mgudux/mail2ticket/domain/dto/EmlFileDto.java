@@ -2,7 +2,6 @@ package com.mgudux.mail2ticket.domain.dto;
 
 import com.mgudux.mail2ticket.domain.entities.ProcessingStatus;
 
-import java.util.List;
 import java.util.UUID;
 
 public class EmlFileDto {
@@ -20,7 +19,7 @@ public class EmlFileDto {
             String body,
             String senderEmail,
             String receiverEmail,
-            String rawEmailS3Key,
+            String rawEmailKey,
             ProcessingStatus processingStatus,
             String errorMessage,
             String uploadBatchId,

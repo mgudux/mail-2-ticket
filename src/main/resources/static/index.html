@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mail2Ticket</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; min-height: 20px; }
+    </style>
+</head>
+<body>
+
+<h1>Mail2Ticket</h1>
+
+<div class="container">
+    <h2>1. Upload EML</h2>
+    <form id="uploadForm">
+        <input type="file" name="file" accept=".eml" required>
+        <button type="submit">Upload & Analyze</button>
+    </form>
+    <pre id="uploadResult"></pre>
+</div>
+
+<div class="container">
+    <h2>2. Search Customer</h2>
+    <form id="searchForm">
+        <label>Email: <input type="email" name="userEmail" required></label><br>
+        <label>First Name: <input type="text" name="firstName"></label><br>
+        <label>Last Name: <input type="text" name="lastName"></label><br>
+        <button type="submit">Search</button>
+    </form>
+    <pre id="searchResult"></pre>
+</div>
+
+<script>
+    document.getElementById('uploadForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const resultBox = document.getElementById('uploadResult');
+        resultBox.textContent = "Analyzing Email...";
+
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: new FormData(e.target)
+        });
+
+        const data = await res.json();
+        resultBox.textContent = JSON.stringify(data, null, 2);
+    };
+
+    document.getElementById('searchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const resultBox = document.getElementById('searchResult');
+        resultBox.textContent = "Searching...";
+
+        const params = new URLSearchParams(new FormData(e.target));
+        for (const [key, value] of params.entries()) {
+            if (!value) params.delete(key);
+        }
+
+        const res = await fetch('/api/customers/search?' + params.toString());
+
+        const data = await res.json();
+        resultBox.textContent = JSON.stringify(data, null, 2);
+    };
+</script>
+
+</body>
+</html>

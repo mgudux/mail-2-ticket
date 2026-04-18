@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -39,11 +38,11 @@ public class EmlFile {
     @Column(name = "subject", nullable = false)
     private String subject;
 
-    @Column(name = "body")
+    @Column(name = "body", columnDefinition = "TEXT")
     private String body;
 
-    @Column(name = "raw_email_s3key")
-    private String rawEmailS3Key;
+    @Column(name = "raw_email_key")
+    private String rawEmailKey;
 
     // Was this email successfully extracted into a Ticket?
     @Enumerated(EnumType.STRING)
@@ -75,7 +74,7 @@ public class EmlFile {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         EmlFile emlFile = (EmlFile) o;
-        return Objects.equals(id, emlFile.id) && Objects.equals(senderEmail, emlFile.senderEmail) && Objects.equals(receiverEmail, emlFile.receiverEmail) && Objects.equals(subject, emlFile.subject) && Objects.equals(body, emlFile.body) && Objects.equals(rawEmailS3Key, emlFile.rawEmailS3Key) && processingStatus == emlFile.processingStatus && Objects.equals(errorMessage, emlFile.errorMessage) && Objects.equals(uploadBatchId, emlFile.uploadBatchId) && Objects.equals(created, emlFile.created) && Objects.equals(updated, emlFile.updated) && Objects.equals(ticket, emlFile.ticket) && Objects.equals(customer, emlFile.customer);
+        return Objects.equals(id, emlFile.id) && Objects.equals(senderEmail, emlFile.senderEmail) && Objects.equals(receiverEmail, emlFile.receiverEmail) && Objects.equals(subject, emlFile.subject) && Objects.equals(body, emlFile.body) && Objects.equals(rawEmailKey, emlFile.rawEmailKey) && processingStatus == emlFile.processingStatus && Objects.equals(errorMessage, emlFile.errorMessage) && Objects.equals(uploadBatchId, emlFile.uploadBatchId) && Objects.equals(created, emlFile.created) && Objects.equals(updated, emlFile.updated) && Objects.equals(ticket, emlFile.ticket) && Objects.equals(customer, emlFile.customer);
     }
 
     @Override
@@ -91,7 +90,7 @@ public class EmlFile {
                 ", receiverEmail='" + receiverEmail + '\'' +
                 ", subject='" + subject + '\'' +
                 ", body='" + body + '\'' +
-                ", rawContent='" + rawEmailS3Key + '\'' +
+                ", rawContent='" + rawEmailKey + '\'' +
                 ", processingStatus=" + processingStatus +
                 ", errorMessage='" + errorMessage + '\'' +
                 ", uploadBatchId='" + uploadBatchId + '\'' +

@@ -33,6 +33,9 @@ public class Ticket {
     @Column(name = "ticket_status", nullable = false)
     private TicketStatus ticketStatus = TicketStatus.OPEN;
 
+    @Column(name = "excel_key")
+    private String excelKey;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "department", nullable = false)
     private Department department = Department.UNKNOWN;
@@ -67,18 +70,11 @@ public class Ticket {
     @JoinColumn(name = "email_id")
     private EmlFile email;
 
-    @PrePersist
-    protected void onCreate() {
-        if (this.ticketNumber == null) {
-            this.ticketNumber = "TKT-" + this.id.toString().substring(0, 8).toUpperCase();
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Ticket ticket = (Ticket) o;
-        return Objects.equals(id, ticket.id) && Objects.equals(ticketNumber, ticket.ticketNumber) && Objects.equals(aiSummary, ticket.aiSummary) && ticketStatus == ticket.ticketStatus && department == ticket.department && sentiment == ticket.sentiment && processingStatus == ticket.processingStatus && Objects.equals(errorMessage, ticket.errorMessage) && Objects.equals(created, ticket.created) && Objects.equals(updated, ticket.updated);
+        return Objects.equals(id, ticket.id) && Objects.equals(ticketNumber, ticket.ticketNumber) && Objects.equals(aiSummary, ticket.aiSummary) && ticketStatus == ticket.ticketStatus && Objects.equals(excelKey, ticket.excelKey) && department == ticket.department && sentiment == ticket.sentiment && processingStatus == ticket.processingStatus && Objects.equals(errorMessage, ticket.errorMessage) && Objects.equals(created, ticket.created) && Objects.equals(updated, ticket.updated) && Objects.equals(customer, ticket.customer) && Objects.equals(email, ticket.email);
     }
 
     @Override
@@ -93,6 +89,7 @@ public class Ticket {
                 ", ticketNumber='" + ticketNumber + '\'' +
                 ", aiSummary='" + aiSummary + '\'' +
                 ", ticketStatus=" + ticketStatus +
+                ", excelKey='" + excelKey + '\'' +
                 ", department=" + department +
                 ", sentiment=" + sentiment +
                 ", processingStatus=" + processingStatus +

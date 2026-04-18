@@ -46,10 +46,10 @@ public class Customer {
     @Column(name = "updated", nullable = false)
     private LocalDateTime updated;
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<EmlFile> emails = new ArrayList<>();
 
-    @OneToMany(mappedBy = "customer")
+    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Ticket> tickets = new ArrayList<>();
 
     @Override

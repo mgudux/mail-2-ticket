@@ -22,6 +22,7 @@ public class TicketDto {
             TicketStatus ticketStatus,
             ProcessingStatus processingStatus,
             String errorMessage,
+            String excelKey,
             UUID customerId,
             String customerName,
             UUID emailId,
