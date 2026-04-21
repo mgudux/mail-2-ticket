@@ -4,7 +4,7 @@ import com.mgudux.mail2ticket.domain.dto.TicketDto;
 import com.mgudux.mail2ticket.domain.entities.Customer;
 import com.mgudux.mail2ticket.domain.entities.EmlFile;
 import com.mgudux.mail2ticket.domain.entities.Ticket;
-import com.mgudux.mail2ticket.integration.ai.dto.AiEmlAnalysis;
+import com.mgudux.mail2ticket.domain.internal.AiEmlAnalysis;
 import com.mgudux.mail2ticket.mapper.TicketMapper;
 import org.springframework.stereotype.Component;
 

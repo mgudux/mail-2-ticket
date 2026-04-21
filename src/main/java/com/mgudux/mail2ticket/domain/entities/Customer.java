@@ -3,6 +3,7 @@ package com.mgudux.mail2ticket.domain.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -27,13 +28,15 @@ public class Customer {
     @Column(name = "id", updatable = false, nullable = false, unique = true)
     private UUID id;
 
+    @NotBlank(message = "Cannot create customer without a first name!")
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @NotBlank(message = "Cannot create customer without a last name!")
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @NotBlank
+    @NotBlank(message = "Cannot create customer without an email!")
     @Email
     @Column(name = "user_email", nullable = false, unique = true)
     private String userEmail;

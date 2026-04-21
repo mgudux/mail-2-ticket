@@ -1,4 +1,4 @@
-package com.mgudux.mail2ticket.integration.ai.dto;
+package com.mgudux.mail2ticket.domain.internal;
 
 import com.mgudux.mail2ticket.domain.entities.Department;
 import com.mgudux.mail2ticket.domain.entities.Sentiment;
@@ -12,7 +12,7 @@ public record AiEmlAnalysis(
         // Ticket
         String extractedAiSummary,
         Department extractedDepartment,
-        Sentiment extractedSentiment
-
+        Sentiment extractedSentiment,
+        boolean hadUnsupportedAttachments
 ) {
 }

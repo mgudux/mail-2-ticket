@@ -11,9 +11,7 @@ import java.util.UUID;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
-    // Find existing Customer by Names + Email, if yes returns the customer
-    Optional<Customer> findByFirstNameAndLastNameAndUserEmail(String firstName, String lastName, String userEmail);
-
-    // Fallback, only checks if Email already exists, if yes it returns the customer
     Optional<Customer> findByUserEmail(String userEmail);
+    boolean existsByUserEmail(String userEmail);
+    boolean existsByUserEmailAndIdNot(String userEmail, UUID id);
 }

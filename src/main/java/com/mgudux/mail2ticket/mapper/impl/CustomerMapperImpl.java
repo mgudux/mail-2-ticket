@@ -3,7 +3,7 @@ package com.mgudux.mail2ticket.mapper.impl;
 
 import com.mgudux.mail2ticket.domain.dto.CustomerDto;
 import com.mgudux.mail2ticket.domain.entities.*;
-import com.mgudux.mail2ticket.integration.ai.dto.AiEmlAnalysis;
+import com.mgudux.mail2ticket.domain.internal.AiEmlAnalysis;
 import com.mgudux.mail2ticket.mapper.CustomerMapper;
 import com.mgudux.mail2ticket.mapper.EmlFileMapper;
 import com.mgudux.mail2ticket.mapper.TicketMapper;

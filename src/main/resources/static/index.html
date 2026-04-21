@@ -3,67 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <title>Mail2Ticket</title>
-    <style>
-        body { font-family: sans-serif; margin: 20px; }
-        .container { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; }
-        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; min-height: 20px; }
-    </style>
 </head>
 <body>
 
 <h1>Mail2Ticket</h1>
 
-<div class="container">
-    <h2>1. Upload EML</h2>
-    <form id="uploadForm">
-        <input type="file" name="file" accept=".eml" required>
-        <button type="submit">Upload & Analyze</button>
-    </form>
-    <pre id="uploadResult"></pre>
+<button onclick="show('upload')">Upload</button>
+<button onclick="show('customers')">Customers</button>
+<button onclick="show('tickets')">Tickets</button>
+<button onclick="show('emails')">EML Files</button>
+
+<hr>
+
+<div id="upload">
+    <h2>Upload EML</h2>
+    <input type="file" id="file" accept=".eml">
+    <button onclick="upload()">Upload & Analyze</button>
+    <pre id="upload-out"></pre>
 </div>
 
-<div class="container">
-    <h2>2. Search Customer</h2>
-    <form id="searchForm">
-        <label>Email: <input type="email" name="userEmail" required></label><br>
-        <label>First Name: <input type="text" name="firstName"></label><br>
-        <label>Last Name: <input type="text" name="lastName"></label><br>
-        <button type="submit">Search</button>
-    </form>
-    <pre id="searchResult"></pre>
+<div id="customers" hidden>
+    <h2>Customers</h2>
+    <div id="customers-list"></div>
+</div>
+
+<div id="tickets" hidden>
+    <h2>Tickets</h2>
+    <div id="tickets-list"></div>
+</div>
+
+<div id="emails" hidden>
+    <h2>EML Files</h2>
+    <div id="emails-list"></div>
 </div>
 
 <script>
-    document.getElementById('uploadForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const resultBox = document.getElementById('uploadResult');
-        resultBox.textContent = "Analyzing Email...";
 
-        const res = await fetch('/api/upload', {
-            method: 'POST',
-            body: new FormData(e.target)
+    const UPDATE_FIELDS = {
+        customers: ['firstName', 'lastName', 'userEmail'],
+        tickets:   ['ticketStatus', 'department'],
+        emails:    ['processingStatus', 'errorMessage']
+    };
+
+    function show(page) {
+        ['upload','customers','tickets','emails'].forEach(p =>
+            document.getElementById(p).hidden = (p !== page));
+        if (page !== 'upload') loadList(page);
+    }
+
+    async function upload() {
+        const fd = new FormData();
+        fd.append('file', document.getElementById('file').files[0]);
+        const r = await fetch('/api/upload', { method: 'POST', body: fd });
+        document.getElementById('upload-out').textContent =
+            JSON.stringify(await r.json(), null, 2);
+    }
+
+    async function loadList(type) {
+        const container = document.getElementById(type + '-list');
+        const r = await fetch('/api/' + type);
+        const items = await r.json();
+
+        if (!items.length) { container.innerHTML = '<p>No records found.</p>'; return; }
+
+        container.innerHTML = items.map(item => {
+            const id = item.id;
+            const summary = Object.entries(item)
+                .map(([k, v]) => `<b>${k}:</b> ${v ?? ''}`)
+                .join(' &nbsp;|&nbsp; ');
+
+            const fields = UPDATE_FIELDS[type].map(f =>
+                `<label>${f}: <input id="upd-${id}-${f}" value="${item[f] ?? ''}"></label> `
+            ).join('');
+
+            return `
+                <div id="row-${id}" style="border:1px solid #ccc; padding:8px; margin-bottom:6px;">
+                    <p>${summary}</p>
+                    <button onclick="deleteItem('${type}', '${id}')">Delete</button>
+                    <button onclick="toggleUpdate('${id}')">Update</button>
+                    <div id="upd-form-${id}" hidden style="margin-top:8px;">
+                        ${fields}
+                        <button onclick="updateItem('${type}', '${id}')">Save</button>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    function toggleUpdate(id) {
+        const form = document.getElementById('upd-form-' + id);
+        form.hidden = !form.hidden;
+    }
+
+    async function updateItem(type, id) {
+        const body = {};
+        UPDATE_FIELDS[type].forEach(f => {
+            const v = document.getElementById(`upd-${id}-${f}`).value;
+            if (v) body[f] = v;
         });
 
-        const data = await res.json();
-        resultBox.textContent = JSON.stringify(data, null, 2);
-    };
+        const r = await fetch(`/api/${type}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
 
-    document.getElementById('searchForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const resultBox = document.getElementById('searchResult');
-        resultBox.textContent = "Searching...";
+        if (r.ok) loadList(type); // refresh list
+        else alert('Update failed: ' + r.status);
+    }
 
-        const params = new URLSearchParams(new FormData(e.target));
-        for (const [key, value] of params.entries()) {
-            if (!value) params.delete(key);
-        }
+    async function deleteItem(type, id) {
+        const r = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
+        if (r.ok) document.getElementById('row-' + id).remove();
+        else alert('Delete failed: ' + r.status);
+    }
 
-        const res = await fetch('/api/customers/search?' + params.toString());
-
-        const data = await res.json();
-        resultBox.textContent = JSON.stringify(data, null, 2);
-    };
 </script>
-
 </body>
 </html>
