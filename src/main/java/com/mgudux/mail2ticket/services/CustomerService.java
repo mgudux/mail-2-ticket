@@ -1,7 +1,6 @@
 package com.mgudux.mail2ticket.services;
 
 import com.mgudux.mail2ticket.domain.dto.CustomerDto;
-import com.mgudux.mail2ticket.domain.entities.Customer;
 
 import java.util.List;
 import java.util.UUID;

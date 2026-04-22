@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: Mail2Ticket
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+  task:
+    execution:
+      pool:
+        core-size: 4
+
+server:
+  tomcat:
+    connection-timeout: 300000
+
+aws:
+  region: eu-central-1
+  s3:
+    bucket: mail2ticket-bucket
+
+
+# Define the attachment mime types the API supports
+app:
+  attachments:
+    allowed-mime-types:
+      # Text (official Gemini API docs)
+      - text/html
+      - text/css
+      - text/plain
+      - text/xml
+      - text/csv
+      - text/rtf
+      - text/javascript
+      # Application
+      - application/json
+      - application/pdf
+      # Images
+      - image/bmp
+      - image/jpeg
+      - image/png
+      - image/webp

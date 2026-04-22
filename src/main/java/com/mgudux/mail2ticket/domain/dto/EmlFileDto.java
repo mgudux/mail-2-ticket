@@ -1,10 +1,25 @@
 package com.mgudux.mail2ticket.domain.dto;
 
 import com.mgudux.mail2ticket.domain.entities.ProcessingStatus;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class EmlFileDto {
+
+    public record Request(
+            @NotNull(message = "File upload is required") MultipartFile file
+    ) {}
+
+    public record Update(
+            @NotBlank(message = "Please enter a valid Proccessing Status") String processingStatus,
+            String errorMessage
+
+    ) {}
 
     public record Summary(
             UUID id,
@@ -17,12 +32,14 @@ public class EmlFileDto {
             UUID id,
             String subject,
             String body,
+            List<String> attachmentNames,
             String senderEmail,
-            String receiverEmail,
+            List<String> receiverEmail,
+            List<String> carbonCopy,
             String rawEmailKey,
             ProcessingStatus processingStatus,
+            LocalDateTime sent,
             String errorMessage,
-            String uploadBatchId,
             TicketDto.Summary ticket,
             UUID customerId,
             String customerName
