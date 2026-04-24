@@ -1,5 +1,7 @@
 package com.mgudux.mail2ticket.domain.internal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -12,6 +14,6 @@ public record ParsedMail(
         List<String> receivers,
         List<String> carbonCopies,
         List<String> attachmentNames,
-        List<AttachmentData> attachments,
+        @JsonIgnore List<AttachmentData> attachments,
         LocalDateTime sentTime
 ) {}

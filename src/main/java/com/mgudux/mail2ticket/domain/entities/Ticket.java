@@ -26,6 +26,9 @@ public class Ticket {
     @Column(name = "ticket_number", unique = true)
     private String ticketNumber;
 
+    @Column(name = "ticket_title")
+    private String ticketTitle;
+
     @Column(name = "ai_summary")
     private String aiSummary;
 
@@ -87,6 +90,7 @@ public class Ticket {
         return "Ticket{" +
                 "id=" + id +
                 ", ticketNumber='" + ticketNumber + '\'' +
+                ", ticketTitle='" + ticketTitle + '\'' +
                 ", aiSummary='" + aiSummary + '\'' +
                 ", ticketStatus=" + ticketStatus +
                 ", excelKey='" + excelKey + '\'' +

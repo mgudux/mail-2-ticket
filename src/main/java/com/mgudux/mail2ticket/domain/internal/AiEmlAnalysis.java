@@ -3,6 +3,8 @@ package com.mgudux.mail2ticket.domain.internal;
 import com.mgudux.mail2ticket.domain.entities.Department;
 import com.mgudux.mail2ticket.domain.entities.Sentiment;
 
+
+// We parse the response from the AI analysis (JSON) into this java object.
 public record AiEmlAnalysis(
 
         // Customer
@@ -10,9 +12,11 @@ public record AiEmlAnalysis(
         String extractedLastName,
 
         // Ticket
+        String extractedTicketTitle,
         String extractedAiSummary,
         Department extractedDepartment,
         Sentiment extractedSentiment,
-        boolean hadUnsupportedAttachments
+        // in case the AI can't analyze some content, we will set PROCESSING_STATUS to PARTIAL_SUCCESS
+        boolean hasUnanalyzedContent
 ) {
 }

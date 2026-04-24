@@ -7,6 +7,7 @@ import java.util.UUID;
 public class TicketDto {
 
     public record Summary(
+            String ticketTitle,
             String ticketNumber,
             Department department,
             TicketStatus ticketStatus,
@@ -15,6 +16,7 @@ public class TicketDto {
 
     public record Detail(
             UUID id,
+            String ticketTitle,
             String ticketNumber,
             String aiSummary,
             Sentiment sentiment,

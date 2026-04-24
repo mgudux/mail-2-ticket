@@ -4,6 +4,7 @@ import com.mgudux.mail2ticket.config.AttachmentProperties;
 import com.mgudux.mail2ticket.domain.internal.AttachmentData;
 import com.mgudux.mail2ticket.domain.internal.ParsedMail;
 import com.mgudux.mail2ticket.exception.ValidationException;
+import com.mgudux.mail2ticket.repositories.EmlFileRepository;
 import com.mgudux.mail2ticket.services.EmlParserService;
 import io.micrometer.common.util.StringUtils;
 import org.jsoup.Jsoup;
@@ -27,9 +28,11 @@ import java.util.List;
 public class EmlParserServiceImpl implements EmlParserService {
 
     private final AttachmentProperties attachmentProperties;
+    private final EmlFileRepository emlFileRepository;
 
-    public EmlParserServiceImpl(AttachmentProperties attachmentProperties) {
+    public EmlParserServiceImpl(AttachmentProperties attachmentProperties, EmlFileRepository emlFileRepository) {
         this.attachmentProperties = attachmentProperties;
+        this.emlFileRepository = emlFileRepository;
     }
 
     @Override
@@ -55,11 +58,18 @@ public class EmlParserServiceImpl implements EmlParserService {
         if (hasNoContent) {
             throw new ValidationException("Cannot create email without a subject, body or attachment");
         }
+
         boolean hasNoSender = email.getFromRecipient() == null
                 || StringUtils.isBlank(email.getFromRecipient().getAddress());
         if (hasNoSender) {
             throw new ValidationException("Cannot process email without a valid sender address");
         }
+
+        boolean alreadyUploaded = emlFileRepository.existsByMessageId(email.getId());
+        if (alreadyUploaded) {
+            throw new ValidationException("Email has already been analyzed!");
+        }
+
     }
 
     private ParsedMail mapToParsedMail(Email email) {

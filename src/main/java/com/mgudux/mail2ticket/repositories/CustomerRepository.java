@@ -13,5 +13,7 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
     Optional<Customer> findByUserEmail(String userEmail);
     boolean existsByUserEmail(String userEmail);
+
+    // if user wants to change userEmail, check if that Email is already used by someone else
     boolean existsByUserEmailAndIdNot(String userEmail, UUID id);
 }

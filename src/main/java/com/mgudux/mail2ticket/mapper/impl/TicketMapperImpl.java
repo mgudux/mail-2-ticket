@@ -17,6 +17,7 @@ public class TicketMapperImpl implements TicketMapper {
             return null;
         }
         return new TicketDto.Summary(
+                ticket.getTicketTitle(),
                 ticket.getTicketNumber(),
                 ticket.getDepartment(),
                 ticket.getTicketStatus(),
@@ -34,6 +35,7 @@ public class TicketMapperImpl implements TicketMapper {
         EmlFile emlFile = ticket.getEmail();
         return new TicketDto.Detail(
                 ticket.getId(),
+                ticket.getTicketTitle(),
                 ticket.getTicketNumber(),
                 ticket.getAiSummary(),
                 ticket.getSentiment(),

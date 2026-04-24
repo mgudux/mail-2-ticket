@@ -17,6 +17,15 @@ spring:
     execution:
       pool:
         core-size: 4
+  ai:
+    google:
+      genai:
+        api-key: ${GOOGLE_API_KEY}
+        chat:
+          options:
+            model: gemini-2.5-flash
+            response-mime-type: application/json
+            temperature: 0.1
 
 server:
   tomcat:
@@ -26,6 +35,7 @@ aws:
   region: eu-central-1
   s3:
     bucket: mail2ticket-bucket
+
 
 
 # Define the attachment mime types the API supports

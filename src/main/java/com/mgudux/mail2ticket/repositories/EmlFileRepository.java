@@ -9,4 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface EmlFileRepository extends JpaRepository<EmlFile, UUID> {
+    boolean existsByMessageId(String messageId);
 }

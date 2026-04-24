@@ -8,7 +8,7 @@ import static java.util.Arrays.stream;
 public enum ProcessingStatus {
     SUCCESS("Success", "Extraction and analysis success!"),
     PARTIAL_SUCCESS("Partial Success", "Partial success but invalid data has been skipped"),
-    MANUAL_CHECK_REQUIRED("Manual Check Required", "Requires manual check");
+    MANUAL_CHECK_REQUIRED("Manual Check Required", "Requires manual check as the AI could not analyze the email");
 
     private final String displayName;
     private final String message;
