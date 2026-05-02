@@ -23,12 +23,10 @@ public class EmlFileServiceImpl implements EmlFileService {
 
     private final EmlFileMapper emlFileMapper;
     private final EmlFileRepository emlFileRepository;
-    private final EmlParserService emlParserService;
 
-    public EmlFileServiceImpl(EmlFileMapper emlFileMapper, EmlFileRepository emlFileRepository, EmlParserService emlParserService) {
+    public EmlFileServiceImpl(EmlFileMapper emlFileMapper, EmlFileRepository emlFileRepository) {
         this.emlFileMapper = emlFileMapper;
         this.emlFileRepository = emlFileRepository;
-        this.emlParserService = emlParserService;
     }
 
     @Override
@@ -44,8 +42,7 @@ public class EmlFileServiceImpl implements EmlFileService {
     }
 
     @Override
-    public EmlFileDto.Summary createEmlFile(EmlFileDto.Request request) {
-        ParsedMail parsedMail = emlParserService.parse(request.file());
+    public EmlFileDto.Summary createEmlFile(ParsedMail parsedMail) {
         EmlFile emlFile = buildEmlFile(parsedMail);
         return emlFileMapper.toSummary(emlFileRepository.save(emlFile));
     }

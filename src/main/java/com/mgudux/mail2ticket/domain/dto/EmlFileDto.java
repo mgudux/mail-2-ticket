@@ -11,10 +11,6 @@ import java.util.UUID;
 
 public class EmlFileDto {
 
-    public record Request(
-            @NotNull(message = "File upload is required") MultipartFile file
-    ) {}
-
     public record Update(
             @NotBlank(message = "Please enter a valid Proccessing Status") String processingStatus,
             String errorMessage

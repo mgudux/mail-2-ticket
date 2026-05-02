@@ -37,12 +37,7 @@ public class CustomerServiceImpl implements CustomerService {
             throw new ConflictException("A customer with this email address already exists!");
         }
 
-        Customer customer = new Customer();
-        customer.setFirstName(request.firstName());
-        customer.setLastName(request.lastName());
-        customer.setUserEmail(request.userEmail());
-
-        return customerMapper.toSummary(customerRepository.save(customer));
+        return customerMapper.toSummary(buildAndSave(request));
     }
 
     @Override
@@ -86,11 +81,28 @@ public class CustomerServiceImpl implements CustomerService {
         if (customerRepository.existsByUserEmailAndIdNot(request.userEmail(), id)) {
             throw new ConflictException("Email address is already used by another Customer!");
         }
+
+        buildAndSave(request);
         existingCustomer.setFirstName(request.firstName());
         existingCustomer.setLastName(request.lastName());
         existingCustomer.setUserEmail(request.userEmail());
+        return customerMapper.toDetail(customerRepository.save(existingCustomer));
+    }
 
-        Customer saved = customerRepository.save(existingCustomer);
-        return customerMapper.toDetail(saved);
+    @Override
+    public CustomerDto.Summary findOrCreateByEmail(CustomerDto.Request request) {
+        Customer customer = customerRepository.findByUserEmail(request.userEmail())
+                .orElseGet(() -> buildAndSave(request));
+        return customerMapper.toSummary(customer);
+
+    }
+
+    private Customer buildAndSave(CustomerDto.Request request) {
+        return customerRepository.save(Customer.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .userEmail(request.userEmail())
+                .build()
+        );
     }
 }

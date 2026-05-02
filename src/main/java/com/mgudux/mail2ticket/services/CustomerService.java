@@ -12,4 +12,5 @@ public interface CustomerService {
     CustomerDto.Detail getCustomerById(UUID id);
     CustomerDto.Detail getCustomerByEmail(String userEmail);
     CustomerDto.Detail updateCustomer(UUID id, CustomerDto.Request request);
+    CustomerDto.Summary findOrCreateByEmail(CustomerDto.Request request);
 }

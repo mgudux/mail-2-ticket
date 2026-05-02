@@ -1,7 +1,11 @@
 package com.mgudux.mail2ticket.services.impl;
 
 import com.mgudux.mail2ticket.domain.dto.TicketDto;
+import com.mgudux.mail2ticket.domain.entities.Customer;
+import com.mgudux.mail2ticket.domain.entities.EmlFile;
+import com.mgudux.mail2ticket.domain.entities.ProcessingStatus;
 import com.mgudux.mail2ticket.domain.entities.Ticket;
+import com.mgudux.mail2ticket.domain.internal.AiEmlAnalysis;
 import com.mgudux.mail2ticket.exception.ResourceNotFoundException;
 import com.mgudux.mail2ticket.exception.ValidationException;
 import com.mgudux.mail2ticket.mapper.TicketMapper;
@@ -42,6 +46,23 @@ public class TicketServiceImpl implements TicketService {
                 .department(request.department())
                 .sentiment(request.sentiment())
                 .build();
+        return ticketMapper.toSummary(ticketRepository.save(ticket));
+    }
+
+    @Override
+    public TicketDto.Summary createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile) {
+
+        Ticket ticket = Ticket.builder()
+                .ticketTitle(aiEmlAnalysis.extractedTicketTitle())
+                .aiSummary(aiEmlAnalysis.extractedAiSummary())
+                .department(aiEmlAnalysis.extractedDepartment())
+                .sentiment(aiEmlAnalysis.extractedSentiment())
+                .processingStatus(aiEmlAnalysis.hasUnanalyzedContent() ?
+                        ProcessingStatus.PARTIAL_SUCCESS : ProcessingStatus.SUCCESS)
+                .customer(customer)
+                .email(emlFile)
+                .build();
+
         return ticketMapper.toSummary(ticketRepository.save(ticket));
     }
 
