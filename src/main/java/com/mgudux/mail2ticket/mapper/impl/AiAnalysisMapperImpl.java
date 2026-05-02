@@ -111,9 +111,9 @@ public class AiAnalysisMapperImpl implements AiAnalysisMapper {
         Attached File Names: %s
         End of Email Metadata
     
-        Beginning Email Body
+        Beginning of Email Body
         %s
-        End Email Body
+        End of Email Body
         """,
                 parsedMail.sentTime(),
                 parsedMail.senderName() != null ? parsedMail.senderName() : "Unknown",

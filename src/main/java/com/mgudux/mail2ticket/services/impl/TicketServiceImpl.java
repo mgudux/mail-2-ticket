@@ -1,7 +1,13 @@
 package com.mgudux.mail2ticket.services.impl;
 
+import com.mgudux.mail2ticket.domain.dto.TicketDto;
 import com.mgudux.mail2ticket.domain.entities.Ticket;
+import com.mgudux.mail2ticket.exception.ResourceNotFoundException;
+import com.mgudux.mail2ticket.exception.ValidationException;
+import com.mgudux.mail2ticket.mapper.TicketMapper;
+import com.mgudux.mail2ticket.repositories.TicketRepository;
 import com.mgudux.mail2ticket.services.TicketService;
+import org.jsoup.internal.StringUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,28 +16,72 @@ import java.util.UUID;
 
 @Service
 public class TicketServiceImpl implements TicketService {
-    @Override
-    public List<Ticket> listTicket() {
-        return List.of();
+
+
+    private final TicketMapper ticketMapper;
+    private final TicketRepository ticketRepository;
+    private static final String ID_NOT_FOUND = "No Ticket with this ID exists";
+
+    public TicketServiceImpl(TicketMapper ticketMapper, TicketRepository ticketRepository) {
+        this.ticketMapper = ticketMapper;
+        this.ticketRepository = ticketRepository;
     }
 
     @Override
-    public Ticket createTicket(Ticket ticket) {
-        return null;
+    public List<TicketDto.Summary> listTicket() {
+        return ticketRepository.findAll().stream().map(ticketMapper::toSummary).toList();
+    }
+
+    @Override
+    public TicketDto.Summary createTicket(TicketDto.Request request) {
+
+        Ticket ticket = Ticket.builder()
+                .ticketTitle(request.ticketTitle())
+                .aiSummary(request.aiSummary())
+                .ticketStatus(request.ticketStatus())
+                .department(request.department())
+                .sentiment(request.sentiment())
+                .build();
+        return ticketMapper.toSummary(ticketRepository.save(ticket));
     }
 
     @Override
     public void deleteTicket(UUID id) {
+        if (id == null) {
+            throw new ValidationException("ID must not be null");
+        }
+        Ticket ticket = ticketRepository.findById(id)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(ID_NOT_FOUND));
+        ticketRepository.delete(ticket);
+    }
+
+    @Override
+    public TicketDto.Detail getTicket(UUID id) {
+        if (id == null) {
+            throw new ValidationException("ID must not be null");
+        }
+        return ticketRepository.findById(id).map(ticketMapper::toDetail)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ID_NOT_FOUND));
 
     }
 
     @Override
-    public Optional<Ticket> getTicket(UUID id) {
-        return Optional.empty();
-    }
+    public TicketDto.Detail updateTicket(UUID id, TicketDto.Request request) {
+        if (id == null) {
+            throw new ValidationException("ID must not be null");
+        }
+        Ticket oldTicket = ticketRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(ID_NOT_FOUND));
 
-    @Override
-    public Ticket updateTicket(UUID id, Ticket ticket) {
-        return null;
+        oldTicket.setTicketTitle(request.ticketTitle());
+        oldTicket.setAiSummary(request.aiSummary());
+        oldTicket.setTicketStatus(request.ticketStatus());
+        oldTicket.setDepartment(request.department());
+        oldTicket.setSentiment(request.sentiment());
+
+        return ticketMapper.toDetail(ticketRepository.save(oldTicket));
     }
 }

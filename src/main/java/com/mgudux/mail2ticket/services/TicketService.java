@@ -1,6 +1,7 @@
 package com.mgudux.mail2ticket.services;
 
 
+import com.mgudux.mail2ticket.domain.dto.TicketDto;
 import com.mgudux.mail2ticket.domain.entities.Ticket;
 
 import java.util.List;
@@ -9,11 +10,11 @@ import java.util.UUID;
 
 public interface TicketService {
 
-    List<Ticket> listTicket();
-    Ticket createTicket(Ticket ticket);
+    List<TicketDto.Summary> listTicket();
+    TicketDto.Summary createTicket(TicketDto.Request request);
     void deleteTicket(UUID id);
 
-    Optional<Ticket> getTicket(UUID id);
-    Ticket updateTicket(UUID id, Ticket ticket);
+    TicketDto.Detail getTicket(UUID id);
+    TicketDto.Detail updateTicket(UUID id, TicketDto.Request request);
 
 }

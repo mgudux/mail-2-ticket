@@ -26,14 +26,15 @@ public class Ticket {
     @Column(name = "ticket_number", unique = true)
     private String ticketNumber;
 
-    @Column(name = "ticket_title")
+    @Column(name = "ticket_title", nullable = false)
     private String ticketTitle;
 
-    @Column(name = "ai_summary")
+    @Column(name = "ai_summary", nullable = false)
     private String aiSummary;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_status", nullable = false)
+    @Builder.Default
     private TicketStatus ticketStatus = TicketStatus.OPEN;
 
     @Column(name = "excel_key")
@@ -41,15 +42,18 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "department", nullable = false)
+    @Builder.Default
     private Department department = Department.UNKNOWN;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "sentiment", nullable = false)
+    @Builder.Default
     private Sentiment sentiment = Sentiment.UNKNOWN;
 
     // Ticket ready to use or needs human review
     @Enumerated(EnumType.STRING)
     @Column(name = "processing_status", nullable = false)
+    @Builder.Default
     private ProcessingStatus processingStatus = ProcessingStatus.MANUAL_CHECK_REQUIRED;
 
     @Column(name = "error_message")

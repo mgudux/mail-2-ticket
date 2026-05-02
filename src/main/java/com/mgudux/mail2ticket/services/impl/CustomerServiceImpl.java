@@ -41,8 +41,8 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setFirstName(request.firstName());
         customer.setLastName(request.lastName());
         customer.setUserEmail(request.userEmail());
-        Customer created = customerRepository.save(customer);
-        return customerMapper.toSummary(created);
+
+        return customerMapper.toSummary(customerRepository.save(customer));
     }
 
     @Override
@@ -71,9 +71,10 @@ public class CustomerServiceImpl implements CustomerService {
         if (userEmail == null || userEmail.isBlank()) {
             throw new ValidationException("Customer Email cannot be empty!");
         }
-        return customerRepository.findByUserEmail(userEmail).map(customerMapper::toDetail)
+        return customerRepository.findByUserEmail(userEmail)
+                .map(customerMapper::toDetail)
                 .orElseThrow(() ->
-                new ResourceNotFoundException("No customer with this email address exists!"));
+                        new ResourceNotFoundException("No customer with this email address exists!"));
     }
 
     @Transactional
