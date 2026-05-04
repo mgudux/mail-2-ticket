@@ -50,7 +50,7 @@ public class TicketServiceImpl implements TicketService {
     }
 
     @Override
-    public TicketDto.Summary createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile) {
+    public Ticket createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile) {
 
         Ticket ticket = Ticket.builder()
                 .ticketTitle(aiEmlAnalysis.extractedTicketTitle())
@@ -63,7 +63,7 @@ public class TicketServiceImpl implements TicketService {
                 .email(emlFile)
                 .build();
 
-        return ticketMapper.toSummary(ticketRepository.save(ticket));
+        return ticketRepository.save(ticket);
     }
 
     @Override

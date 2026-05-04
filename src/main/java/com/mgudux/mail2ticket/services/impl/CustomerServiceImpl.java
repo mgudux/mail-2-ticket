@@ -90,11 +90,9 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerDto.Summary findOrCreateByEmail(CustomerDto.Request request) {
-        Customer customer = customerRepository.findByUserEmail(request.userEmail())
+    public Customer findOrCreateByEmail(CustomerDto.Request request) {
+        return customerRepository.findByUserEmail(request.userEmail())
                 .orElseGet(() -> buildAndSave(request));
-        return customerMapper.toSummary(customer);
-
     }
 
     private Customer buildAndSave(CustomerDto.Request request) {

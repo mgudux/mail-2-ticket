@@ -15,8 +15,8 @@ public interface TicketService {
 
     List<TicketDto.Summary> listTicket();
     TicketDto.Summary createTicket(TicketDto.Request request);
-    // No DTO as parameter because Pipeline is only used for internal objects between services
-    TicketDto.Summary createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile);
+    // No DTO because Pipeline is only used for internal objects between services
+    Ticket createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile);
     void deleteTicket(UUID id);
 
     TicketDto.Detail getTicket(UUID id);

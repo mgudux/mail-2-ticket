@@ -1,6 +1,7 @@
 package com.mgudux.mail2ticket.services;
 
 import com.mgudux.mail2ticket.domain.dto.CustomerDto;
+import com.mgudux.mail2ticket.domain.entities.Customer;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,5 +13,5 @@ public interface CustomerService {
     CustomerDto.Detail getCustomerById(UUID id);
     CustomerDto.Detail getCustomerByEmail(String userEmail);
     CustomerDto.Detail updateCustomer(UUID id, CustomerDto.Request request);
-    CustomerDto.Summary findOrCreateByEmail(CustomerDto.Request request);
+    Customer findOrCreateByEmail(CustomerDto.Request request);
 }

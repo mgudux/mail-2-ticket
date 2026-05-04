@@ -9,13 +9,11 @@ import com.mgudux.mail2ticket.exception.ValidationException;
 import com.mgudux.mail2ticket.mapper.EmlFileMapper;
 import com.mgudux.mail2ticket.repositories.EmlFileRepository;
 import com.mgudux.mail2ticket.services.EmlFileService;
-import com.mgudux.mail2ticket.services.EmlParserService;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,9 +40,9 @@ public class EmlFileServiceImpl implements EmlFileService {
     }
 
     @Override
-    public EmlFileDto.Summary createEmlFile(ParsedMail parsedMail) {
+    public EmlFile createEmlFile(ParsedMail parsedMail) {
         EmlFile emlFile = buildEmlFile(parsedMail);
-        return emlFileMapper.toSummary(emlFileRepository.save(emlFile));
+        return emlFileRepository.save(emlFile);
     }
 
     private EmlFile buildEmlFile(ParsedMail mail) {
