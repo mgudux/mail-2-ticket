@@ -14,7 +14,11 @@ public class CustomerDto {
             @NotBlank(message = "First name is required") String firstName,
             @NotBlank(message = "Last name is required") String lastName,
             @NotBlank(message = "Email is required") @Email String userEmail
-    ) {}
+    ) {
+        public Object id() {
+            return null;
+        }
+    }
 
     public record Summary(
             UUID id,

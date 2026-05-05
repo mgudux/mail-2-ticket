@@ -1,22 +1,17 @@
 package com.mgudux.mail2ticket.domain.internal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mgudux.mail2ticket.domain.entities.Department;
 import com.mgudux.mail2ticket.domain.entities.Sentiment;
 
 
 // We parse the response from the AI analysis (JSON) into this java object.
 public record AiEmlAnalysis(
-
-        // Customer
-        String extractedFirstName,
-        String extractedLastName,
-
-        // Ticket
-        String extractedTicketTitle,
-        String extractedAiSummary,
-        Department extractedDepartment,
-        Sentiment extractedSentiment,
-        // in case the AI can't analyze some content, we will set PROCESSING_STATUS to PARTIAL_SUCCESS
-        boolean hasUnanalyzedContent
-) {
-}
+        @JsonProperty("extractedFirstName") String extractedFirstName,
+        @JsonProperty("extractedLastName") String extractedLastName,
+        @JsonProperty("extractedTicketTitle") String extractedTicketTitle,
+        @JsonProperty("extractedAiSummary") String extractedAiSummary,
+        @JsonProperty("extractedDepartment") Department extractedDepartment,
+        @JsonProperty("extractedSentiment") Sentiment extractedSentiment,
+        @JsonProperty("hasUnanalyzedContent") boolean hasUnanalyzedContent
+) {}

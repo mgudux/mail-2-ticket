@@ -17,6 +17,7 @@ public class TicketMapperImpl implements TicketMapper {
             return null;
         }
         return new TicketDto.Summary(
+                ticket.getId(),
                 ticket.getTicketTitle(),
                 ticket.getTicketNumber(),
                 ticket.getDepartment(),
@@ -56,10 +57,25 @@ public class TicketMapperImpl implements TicketMapper {
         if (aiEmlAnalysis == null) {
             return null;
         }
-        Ticket ticket = new Ticket();
-        ticket.setAiSummary(aiEmlAnalysis.extractedAiSummary());
-        ticket.setDepartment(aiEmlAnalysis.extractedDepartment());
-        ticket.setSentiment(aiEmlAnalysis.extractedSentiment());
-        return ticket;
+        return Ticket.builder()
+                .ticketTitle(aiEmlAnalysis.extractedTicketTitle())
+                .aiSummary(aiEmlAnalysis.extractedAiSummary())
+                .department(aiEmlAnalysis.extractedDepartment())
+                .sentiment(aiEmlAnalysis.extractedSentiment())
+                .build();
     }
+
+    @Override
+    public void updateTicketFromRequest(TicketDto.Request request, Ticket existingTicket) {
+        if (request == null) {
+            return;
+        }
+        existingTicket.setTicketTitle(request.ticketTitle());
+        existingTicket.setAiSummary(request.aiSummary());
+        existingTicket.setTicketStatus(request.ticketStatus());
+        existingTicket.setDepartment(request.department());
+        existingTicket.setSentiment(request.sentiment());
+    }
+
+
 }

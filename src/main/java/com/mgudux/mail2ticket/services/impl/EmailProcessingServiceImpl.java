@@ -50,6 +50,7 @@ public class EmailProcessingServiceImpl implements EmailProcessingService {
         EmlFile emlFile = emlFileService.createEmlFile(parsedMail);
 
         Ticket ticket = ticketService.createTicketPipeline(aiEmlAnalysis, customer, emlFile);
+        emlFileService.updateProcessingStatus(emlFile, ticket.getProcessingStatus());
 
         return new UploadResponse(
                 customer.getId(),

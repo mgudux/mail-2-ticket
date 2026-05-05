@@ -3,33 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Mail2Ticket</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .detail-box { background: #f9f9f9; border: 1px solid #aaa; padding: 10px; margin-top: 8px; white-space: pre-wrap; font-size: 13px; }
+        .row { border: 1px solid #ccc; padding: 8px; margin-bottom: 6px; }
+        .edit-form { margin-top: 10px; padding-top: 10px; border-top: 1px dotted #ccc; }
+        button { margin-right: 4px; }
+        input { margin-right: 6px; }
+        nav button { margin-right: 8px; font-size: 15px; }
+    </style>
 </head>
 <body>
 
 <h1>Mail2Ticket</h1>
 
-<button onclick="show('upload')">Upload</button>
-<button onclick="show('customers')">Customers</button>
-<button onclick="show('tickets')">Tickets</button>
-<button onclick="show('emails')">EML Files</button>
-
+<nav>
+    <button onclick="show('upload')">Upload</button>
+    <button onclick="show('tickets')">Tickets</button>
+    <button onclick="show('customers')">Customers</button>
+    <button onclick="show('emails')">EML Files</button>
+</nav>
 <hr>
 
 <div id="upload">
     <h2>Upload EML</h2>
     <input type="file" id="file" accept=".eml">
     <button onclick="upload()">Upload & Analyze</button>
-    <pre id="upload-out"></pre>
+    <pre id="upload-out" style="background:#eee; padding:10px; margin-top:10px;"></pre>
+</div>
+
+<div id="tickets" hidden>
+    <h2>Tickets</h2>
+    <div style="border:1px dashed #666; padding:10px; margin-bottom:15px; background:#fafafa;">
+        <b>Create Manual Ticket:</b><br><br>
+        <label>Title: <input id="new-ticket-title" placeholder="Ticket Title"></label>
+        <label>AI Summary: <input id="new-ticket-summary" placeholder="AI Summary"></label>
+        <label>Department: <input id="new-ticket-dept" placeholder="e.g. SALES"></label>
+        <label>Sentiment: <input id="new-ticket-sentiment" placeholder="e.g. FRUSTRATED"></label>
+        <label>Status: <input id="new-ticket-status" placeholder="e.g. OPEN"></label>
+        <button onclick="createTicket()">Create</button>
+    </div>
+    <div id="tickets-list"></div>
 </div>
 
 <div id="customers" hidden>
     <h2>Customers</h2>
     <div id="customers-list"></div>
-</div>
-
-<div id="tickets" hidden>
-    <h2>Tickets</h2>
-    <div id="tickets-list"></div>
 </div>
 
 <div id="emails" hidden>
@@ -38,85 +57,141 @@
 </div>
 
 <script>
-
-    const UPDATE_FIELDS = {
-        customers: ['firstName', 'lastName', 'userEmail'],
-        tickets:   ['ticketStatus', 'department'],
-        emails:    ['processingStatus', 'errorMessage']
-    };
-
     function show(page) {
-        ['upload','customers','tickets','emails'].forEach(p =>
-            document.getElementById(p).hidden = (p !== page));
+        ['upload', 'tickets', 'customers', 'emails'].forEach(p =>
+            document.getElementById(p).hidden = (p !== page)
+        );
         if (page !== 'upload') loadList(page);
     }
 
     async function upload() {
+        const fileInput = document.getElementById('file');
+        if (!fileInput.files[0]) return alert("Please select a file.");
         const fd = new FormData();
-        fd.append('file', document.getElementById('file').files[0]);
+        fd.append('file', fileInput.files[0]);
         const r = await fetch('/api/upload', { method: 'POST', body: fd });
-        document.getElementById('upload-out').textContent =
-            JSON.stringify(await r.json(), null, 2);
+        document.getElementById('upload-out').textContent = JSON.stringify(await r.json(), null, 2);
     }
+
+    const ENDPOINTS = { tickets: 'tickets', customers: 'customers', emails: 'emails' };
+
+    const UPDATE_FIELDS = {
+        customers: ['firstName', 'lastName', 'userEmail'],
+        tickets:   ['ticketTitle', 'ticketStatus', 'department', 'aiSummary', 'sentiment'],
+        emails:    ['processingStatus', 'errorMessage']
+    };
 
     async function loadList(type) {
         const container = document.getElementById(type + '-list');
-        const r = await fetch('/api/' + type);
+        const r = await fetch('/api/' + ENDPOINTS[type]);
+        if (!r.ok) { container.innerHTML = `<p>Error loading ${type}</p>`; return; }
         const items = await r.json();
-
         if (!items.length) { container.innerHTML = '<p>No records found.</p>'; return; }
-
-        container.innerHTML = items.map(item => {
-            const id = item.id;
-            const summary = Object.entries(item)
-                .map(([k, v]) => `<b>${k}:</b> ${v ?? ''}`)
-                .join(' &nbsp;|&nbsp; ');
-
-            const fields = UPDATE_FIELDS[type].map(f =>
-                `<label>${f}: <input id="upd-${id}-${f}" value="${item[f] ?? ''}"></label> `
-            ).join('');
-
-            return `
-                <div id="row-${id}" style="border:1px solid #ccc; padding:8px; margin-bottom:6px;">
-                    <p>${summary}</p>
-                    <button onclick="deleteItem('${type}', '${id}')">Delete</button>
-                    <button onclick="toggleUpdate('${id}')">Update</button>
-                    <div id="upd-form-${id}" hidden style="margin-top:8px;">
-                        ${fields}
-                        <button onclick="updateItem('${type}', '${id}')">Save</button>
-                    </div>
-                </div>`;
-        }).join('');
+        container.innerHTML = items.map(item => renderRow(type, item)).join('');
     }
 
-    function toggleUpdate(id) {
-        const form = document.getElementById('upd-form-' + id);
-        form.hidden = !form.hidden;
+    function renderRow(type, item) {
+        const summary = Object.entries(item)
+            .map(([k, v]) => `<b>${k}:</b> ${v ?? ''}`)
+            .join(' &nbsp;|&nbsp; ');
+
+        const fields = UPDATE_FIELDS[type].map(f => {
+            const inputId = `upd-${item.id}-${f}`;
+            return `<label for="${inputId}">${f}: </label><input id="${inputId}" value="${item[f] ?? ''}"> `;
+        }).join('');
+
+        const extraButtons = type === 'customers'
+            ? `<button onclick="loadCustomerTickets('${item.id}')">View Tickets</button>`
+            : '';
+
+        return `
+            <div id="row-${item.id}" class="row">
+                <p style="margin:0 0 8px 0">${summary}</p>
+                <button onclick="deleteItem('${type}', '${item.id}')">Delete</button>
+                <button onclick="toggleSection('edit-${item.id}')">Edit</button>
+                <button onclick="loadDetail('${type}', '${item.id}')">View Detail</button>
+                ${extraButtons}
+                <div id="edit-${item.id}" hidden class="edit-form">
+                    ${fields}
+                    <button onclick="updateItem('${type}', '${item.id}')">Save</button>
+                </div>
+                <div id="detail-${item.id}" hidden class="detail-box"></div>
+                ${type === 'customers' ? `<div id="customer-tickets-${item.id}" hidden class="detail-box"></div>` : ''}
+            </div>`;
+    }
+
+    function toggleSection(id) {
+        const el = document.getElementById(id);
+        el.hidden = !el.hidden;
+    }
+
+    async function loadDetail(type, id) {
+        const box = document.getElementById(`detail-${id}`);
+        if (!box.hidden) { box.hidden = true; return; }
+        const r = await fetch(`/api/${ENDPOINTS[type]}/${id}`);
+        box.textContent = JSON.stringify(await r.json(), null, 2);
+        box.hidden = false;
+    }
+
+    async function loadCustomerTickets(customerId) {
+        const box = document.getElementById(`customer-tickets-${customerId}`);
+        if (!box.hidden) { box.hidden = true; return; }
+        const r = await fetch(`/api/customers/${customerId}/tickets`);
+        const tickets = await r.json();
+        box.textContent = tickets.length
+            ? JSON.stringify(tickets, null, 2)
+            : 'No tickets found for this customer.';
+        box.hidden = false;
+    }
+
+    async function createTicket() {
+        const title = document.getElementById('new-ticket-title').value;
+        if (!title) return alert('Title is required!');
+
+        const body = {
+            ticketTitle:  title,
+            aiSummary:    document.getElementById('new-ticket-summary').value,
+            department:   document.getElementById('new-ticket-dept').value,
+            sentiment:    document.getElementById('new-ticket-sentiment').value,
+            ticketStatus: document.getElementById('new-ticket-status').value || 'OPEN'
+        };
+
+        const r = await fetch('/api/tickets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (r.ok) {
+            ['new-ticket-title','new-ticket-summary','new-ticket-dept','new-ticket-sentiment','new-ticket-status']
+                .forEach(id => document.getElementById(id).value = '');
+            loadList('tickets');
+        } else {
+            alert('Creation failed: ' + r.status);
+        }
     }
 
     async function updateItem(type, id) {
         const body = {};
         UPDATE_FIELDS[type].forEach(f => {
-            const v = document.getElementById(`upd-${id}-${f}`).value;
-            if (v) body[f] = v;
+            const val = document.getElementById(`upd-${id}-${f}`)?.value;
+            if (val) body[f] = val;
         });
 
-        const r = await fetch(`/api/${type}/${id}`, {
+        const r = await fetch(`/api/${ENDPOINTS[type]}/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
 
-        if (r.ok) loadList(type); // refresh list
-        else alert('Update failed: ' + r.status);
+        r.ok ? loadList(type) : alert('Update failed: ' + r.status);
     }
 
     async function deleteItem(type, id) {
-        const r = await fetch(`/api/${type}/${id}`, { method: 'DELETE' });
-        if (r.ok) document.getElementById('row-' + id).remove();
-        else alert('Delete failed: ' + r.status);
+        if (!confirm('Are you sure?')) return;
+        const r = await fetch(`/api/${ENDPOINTS[type]}/${id}`, { method: 'DELETE' });
+        r.ok ? loadList(type) : alert('Delete failed: ' + r.status);
     }
-
 </script>
 </body>
 </html>

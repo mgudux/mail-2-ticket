@@ -1,7 +1,6 @@
 package com.mgudux.mail2ticket.mapper.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mgudux.mail2ticket.domain.entities.Department;
 import com.mgudux.mail2ticket.domain.entities.Sentiment;
@@ -24,11 +23,8 @@ import java.util.stream.Collectors;
 @Component
 public class AiAnalysisMapperImpl implements AiAnalysisMapper {
 
-    private final ObjectMapper objectMapper;
-
-    public AiAnalysisMapperImpl(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .findAndRegisterModules();
 
     @Override
     public SystemMessage buildSystemMessage() {
@@ -54,7 +50,6 @@ public class AiAnalysisMapperImpl implements AiAnalysisMapper {
                     .replace("```json", "")
                     .replace("```", "")
                     .trim();
-
             return objectMapper.readValue(cleanedJson, AiEmlAnalysis.class);
         } catch (JsonProcessingException e) {
             throw new ConflictException("Failed to map AI JSON output to AiEmlAnalysis record. Raw output: " + jsonResponse, e);
@@ -72,27 +67,30 @@ public class AiAnalysisMapperImpl implements AiAnalysisMapper {
                 .collect(Collectors.joining(", ", "[", "]"));
 
         return String.format("""
-            You are an automated customer support email analyzer.
-            Your task is to analyze the provided parsed EML email data and extract specific information to populate a support ticket system.
-
-            You must respond ONLY with a valid JSON object. Do not include any explanations, introductory text, or markdown code blocks.
-
-            The JSON object must contain exactly the following keys with the specified data types:
-
-            - "extractedFirstName": (string) The sender's first name, inferred from the senderName or senderEmail fields.
-            - "extractedLastName": (string) The sender's last name, inferred from the senderName or senderEmail fields.
-            - "extractedTicketTitle": (string) A concise 5-10 word title summarizing the core issue based on the subject and body.
-            - "extractedAiSummary": (string) A comprehensive summary paragraph of the email's content and the customer's request.
-            - "extractedDepartment": (string) The department best suited to handle the request. MUST be exactly one of: %s.
-            - "extractedSentiment": (string) The emotional tone of the email. Choose the sentiment name from this list (keywords are provided in brackets to guide your choice): %s.
-            - "hasUnanalyzedContent": (boolean) Set to true if the email partially contains content (e.g., complex attachments, unsupported languages, or garbled text) that cannot be fully analyzed. Otherwise, set to false.
-            
-            Example JSON response:
+            You are an automated customer support email analyzer for a business support ticket system.
+            Analyze the provided email and extract structured information.
+        
+            You must respond ONLY with a valid JSON object. No explanations, no markdown, no code blocks.
+        
+            IMPORTANT: Always make your best judgment. UNKNOWN or fallback values are a LAST RESORT only when
+            the information is completely impossible to determine. Never default to them out of uncertainty — commit to the most fitting option.
+        
+            FIELD INSTRUCTIONS:
+        
+            "extractedFirstName": Infer from senderName first, then senderEmail. Only "Unknown" if truly undetectable.
+            "extractedLastName": Same rules as firstName.
+            "extractedTicketTitle": A specific, concise 5-10 word title capturing the exact issue. Never generic.
+            "extractedAiSummary": A clear paragraph summarizing the problem and what the customer is requesting.
+            "extractedDepartment": MUST be exactly one of: %s. Use UNKNOWN only if the email is completely nonsensical.
+            "extractedSentiment": MUST be exactly one of: %s. Pick the closest match — never leave ambiguous.
+            "hasUnanalyzedContent": true ONLY if attachments are unreadable, text is garbled, or language is unsupported. Otherwise false.
+        
+            Example:
             {
               "extractedFirstName": "Jane",
               "extractedLastName": "Doe",
-              "extractedTicketTitle": "Unable to access billing portal",
-              "extractedAiSummary": "The customer is reporting an issue accessing the billing portal after resetting their password. They need immediate assistance to download their monthly invoice.",
+              "extractedTicketTitle": "Unable to access billing portal after password reset",
+              "extractedAiSummary": "The customer reports being locked out of the billing portal after resetting their password. They urgently need to download their monthly invoice and request immediate assistance.",
               "extractedDepartment": "ACCOUNTING",
               "extractedSentiment": "FRUSTRATED",
               "hasUnanalyzedContent": false

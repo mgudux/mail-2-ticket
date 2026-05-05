@@ -18,6 +18,7 @@ public class TicketDto {
             ) {}
 
     public record Summary(
+            UUID id,
             String ticketTitle,
             String ticketNumber,
             Department department,

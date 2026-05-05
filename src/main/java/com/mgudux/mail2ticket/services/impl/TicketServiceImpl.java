@@ -9,13 +9,13 @@ import com.mgudux.mail2ticket.domain.internal.AiEmlAnalysis;
 import com.mgudux.mail2ticket.exception.ResourceNotFoundException;
 import com.mgudux.mail2ticket.exception.ValidationException;
 import com.mgudux.mail2ticket.mapper.TicketMapper;
+import com.mgudux.mail2ticket.repositories.CustomerRepository;
 import com.mgudux.mail2ticket.repositories.TicketRepository;
 import com.mgudux.mail2ticket.services.TicketService;
-import org.jsoup.internal.StringUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,44 +24,55 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketMapper ticketMapper;
     private final TicketRepository ticketRepository;
+    private final CustomerRepository customerRepository;
     private static final String ID_NOT_FOUND = "No Ticket with this ID exists";
 
-    public TicketServiceImpl(TicketMapper ticketMapper, TicketRepository ticketRepository) {
+    public TicketServiceImpl(TicketMapper ticketMapper, TicketRepository ticketRepository, CustomerRepository customerRepository) {
         this.ticketMapper = ticketMapper;
         this.ticketRepository = ticketRepository;
+        this.customerRepository = customerRepository;
     }
 
     @Override
-    public List<TicketDto.Summary> listTicket() {
+    public List<TicketDto.Summary> listTickets() {
         return ticketRepository.findAll().stream().map(ticketMapper::toSummary).toList();
     }
 
     @Override
-    public TicketDto.Summary createTicket(TicketDto.Request request) {
+    public List<TicketDto.Summary> listCustomerTickets(UUID customerId) {
+
+        if (!customerRepository.existsById(customerId)) {
+            throw new ResourceNotFoundException("Customer not found with id: " + customerId);
+        }
+        return ticketRepository.findByCustomerId(customerId)
+                .stream()
+                .map(ticketMapper::toSummary)
+                .toList();
+    }
+
+    @Override
+    public TicketDto.Detail createTicket(TicketDto.Request request) {
 
         Ticket ticket = Ticket.builder()
                 .ticketTitle(request.ticketTitle())
                 .aiSummary(request.aiSummary())
                 .ticketStatus(request.ticketStatus())
+                .ticketNumber("TKT-" + System.currentTimeMillis())
                 .department(request.department())
                 .sentiment(request.sentiment())
                 .build();
-        return ticketMapper.toSummary(ticketRepository.save(ticket));
+        return ticketMapper.toDetail(ticketRepository.save(ticket));
     }
 
     @Override
     public Ticket createTicketPipeline(AiEmlAnalysis aiEmlAnalysis, Customer customer, EmlFile emlFile) {
 
-        Ticket ticket = Ticket.builder()
-                .ticketTitle(aiEmlAnalysis.extractedTicketTitle())
-                .aiSummary(aiEmlAnalysis.extractedAiSummary())
-                .department(aiEmlAnalysis.extractedDepartment())
-                .sentiment(aiEmlAnalysis.extractedSentiment())
-                .processingStatus(aiEmlAnalysis.hasUnanalyzedContent() ?
-                        ProcessingStatus.PARTIAL_SUCCESS : ProcessingStatus.SUCCESS)
-                .customer(customer)
-                .email(emlFile)
-                .build();
+        Ticket ticket = ticketMapper.fromAiAnalysis(aiEmlAnalysis);
+        ticket.setCustomer(customer);
+        ticket.setEmail(emlFile);
+        ticket.setTicketNumber("TKT-" + System.currentTimeMillis());
+        ticket.setProcessingStatus(aiEmlAnalysis.hasUnanalyzedContent() ?
+                ProcessingStatus.PARTIAL_SUCCESS : ProcessingStatus.SUCCESS);
 
         return ticketRepository.save(ticket);
     }
@@ -88,21 +99,18 @@ public class TicketServiceImpl implements TicketService {
 
     }
 
+    @Transactional
     @Override
     public TicketDto.Detail updateTicket(UUID id, TicketDto.Request request) {
         if (id == null) {
             throw new ValidationException("ID must not be null");
         }
-        Ticket oldTicket = ticketRepository.findById(id)
+        Ticket existingTicket = ticketRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(ID_NOT_FOUND));
 
-        oldTicket.setTicketTitle(request.ticketTitle());
-        oldTicket.setAiSummary(request.aiSummary());
-        oldTicket.setTicketStatus(request.ticketStatus());
-        oldTicket.setDepartment(request.department());
-        oldTicket.setSentiment(request.sentiment());
+        ticketMapper.updateTicketFromRequest(request, existingTicket);
 
-        return ticketMapper.toDetail(ticketRepository.save(oldTicket));
+        return ticketMapper.toDetail(ticketRepository.save(existingTicket));
     }
 }

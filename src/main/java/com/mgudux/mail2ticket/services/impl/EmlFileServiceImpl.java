@@ -79,4 +79,11 @@ public class EmlFileServiceImpl implements EmlFileService {
         existingEmlFile.setErrorMessage(update.errorMessage());
         return emlFileMapper.toDetail(emlFileRepository.save(existingEmlFile));
     }
+
+    @Override
+    public void updateProcessingStatus(EmlFile emlFile, ProcessingStatus status) {
+        emlFile.setProcessingStatus(status);
+        emlFileRepository.save(emlFile);
+    }
+
 }

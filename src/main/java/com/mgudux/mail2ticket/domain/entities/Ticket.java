@@ -29,7 +29,7 @@ public class Ticket {
     @Column(name = "ticket_title", nullable = false)
     private String ticketTitle;
 
-    @Column(name = "ai_summary", nullable = false)
+    @Column(name = "ai_summary", nullable = false, columnDefinition = "TEXT")
     private String aiSummary;
 
     @Enumerated(EnumType.STRING)

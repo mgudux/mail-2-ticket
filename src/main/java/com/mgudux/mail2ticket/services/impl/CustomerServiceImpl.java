@@ -82,7 +82,6 @@ public class CustomerServiceImpl implements CustomerService {
             throw new ConflictException("Email address is already used by another Customer!");
         }
 
-        buildAndSave(request);
         existingCustomer.setFirstName(request.firstName());
         existingCustomer.setLastName(request.lastName());
         existingCustomer.setUserEmail(request.userEmail());
