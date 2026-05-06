@@ -2,6 +2,8 @@
 
 A backend service built with Spring Boot that converts `.eml` files into support tickets. The system reads email files, extracts text and attachments and uses a multimodal AI model to analyze the content and route each ticket to the correct department.
 
+<img width="2537" height="1235" alt="mail2ticket-demo" src="https://github.com/user-attachments/assets/19efe720-9e6b-4398-a086-5a7cfa2dfd9f" />
+
 ---
 
 ## Core Features
