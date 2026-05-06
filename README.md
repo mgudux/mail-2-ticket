@@ -4,9 +4,22 @@ A backend service built with Spring Boot that converts `.eml` files into support
 
 ---
 
+## Core Features
+
+- **Email Parsing**: Reads `.eml` files using `simple-java-mail`, extracting metadata, plain text, HTML (stripped via Jsoup) and binary attachments. Duplicate emails are rejected using the `message_id` field.
+- **Attachment Filtering**: Only attachments with MIME types listed under `app.attachments.allowed-mime-types` in `application.yml` are forwarded to the AI (e.g. PDFs, images, plain text). All attachment names are still recorded regardless.
+- **Multimodal AI Analysis**: Forwards both email text and permitted attachments to Gemini in a single multimodal request, receiving a structured JSON response mapped to `AiEmlAnalysis`.
+- **Sentiment & Department Routing**: The AI assigns one of the defined `Sentiment` values (`THREATENING`, `ANGRY`, `FRUSTRATED`, `NEUTRAL`, `SATISFIED`, `POSITIVE`, `UNKNOWN`) and one `Department` value (`SALES`, `LEGAL`, `TECH`, `ACCOUNTING`, `HR`, `UNKNOWN`). A keyword-based fallback (`Sentiment.guessFromTextFallback`) is available if AI analysis is unavailable.
+- **Processing Status Tracking**: Each `EmlFile` and `Ticket` carries a `ProcessingStatus` (`SUCCESS`, `PARTIAL_SUCCESS`, `MANUAL_CHECK_REQUIRED`) reflecting how completely the AI could analyze the email.
+- **Error Handling**: A `GlobalExceptionHandler` maps `ConflictException`, `ResourceNotFoundException` and `ValidationException` to HTTP status codes with a consistent `ErrorResponse` payload.
+- **Progress Metrics**: The `CustomerDto.Detail` response includes `emailProgress` (ratio of successfully processed emails) and `ticketProgress` (ratio of resolved or closed tickets).
+- **DTO Separation**: DTOs are divided into `.Summary` and `.Detail` to prevent infinite loops caused by bidirectional entity relations. Summary contains only the most important fields while Detail additionally includes related entity data.
+
+---
+
 ## Architecture & Design
 
-The application follows multi-layer Spring Boot architecture, separating web requests, business logic and database access.
+The application follows a multi-layer Spring Boot architecture, separating web requests, business logic and database access.
 
 ```mermaid
 flowchart TD
@@ -29,6 +42,8 @@ flowchart TD
     end
 ```
 
+---
+
 ## How it works
 
 1. A `.eml` file is uploaded to the application via `POST /api/upload`.
@@ -44,7 +59,7 @@ flowchart TD
 
 ## Entity Relations
 
-`Department` and `Sentiment` are Java enums stored as string columns directly on the `tickets` table - they are not separate database tables.
+`Department` and `Sentiment` are Java enums stored as string columns directly on the `tickets` table
 
 ```mermaid
 erDiagram
@@ -53,8 +68,6 @@ erDiagram
         String first_name
         String last_name
         String user_email
-        LocalDateTime created
-        LocalDateTime updated
     }
     TICKETS {
         UUID id PK
@@ -69,8 +82,6 @@ erDiagram
         String excel_key
         UUID customer_id FK
         UUID email_id FK
-        LocalDateTime created
-        LocalDateTime updated
     }
     EMAILS {
         UUID id PK
@@ -84,8 +95,6 @@ erDiagram
         String error_message
         LocalDateTime sent
         UUID customer_id FK
-        LocalDateTime created
-        LocalDateTime updated
     }
 
     CUSTOMERS ||--o{ TICKETS : "has many"
@@ -132,29 +141,7 @@ erDiagram
 | **PUT** | `/api/emails/{id}` | Manually update the processing status or error message of an EML file. |
 | **DELETE** | `/api/emails/{id}` | Delete an EML file record by ID. |
 
-> **Note:** There is no `POST /api/customers` endpoint. Customers are created through the upload pipeline. If required, there is a working method in the CustomerService: `createCustomer()`
-
----
-
-## Project Structure
-
-```text
-├── docker-compose.yml          Infrastructure containerization (PostgreSQL)
-├── mvnw / pom.xml              Maven build configuration and wrappers
-└── src/
-    ├── main/java/.../mail2ticket/
-    │   ├── config/             AttachmentProperties - allowed MIME types loaded from application.yml
-    │   ├── controller/         REST endpoints: UploadController, TicketController, CustomerController, EmlFileController
-    │   ├── domain/
-    │   │   ├── entities/       JPA entities (Ticket, Customer, EmlFile) and enums (Department, Sentiment, TicketStatus, ProcessingStatus)
-    │   │   ├── dto/            API request/response records (TicketDto, CustomerDto, EmlFileDto)
-    │   │   └── internal/       Internal pipeline models (ParsedMail, AiEmlAnalysis, AttachmentData, UploadResponse)
-    │   ├── exception/          GlobalExceptionHandler and custom exceptions (ConflictException, ResourceNotFoundException, ValidationException)
-    │   ├── mapper/             Interfaces and implementations for entity ↔ DTO conversion and AI response parsing
-    │   ├── repositories/       Spring Data JPA repositories (TicketRepository, CustomerRepository, EmlFileRepository)
-    │   └── services/           Business logic: EmailProcessingService orchestrates EmlParserService, MultimodalAiService, CustomerService, EmlFileService, TicketService
-    └── test/                   Unit test suite (currently CustomerServiceImplTest)
-```
+> **Note:** There is no `POST /api/customers` endpoint. Customers are created through the upload pipeline. If required, there is a working method in `CustomerService`: `createCustomer()`
 
 ---
 
@@ -169,7 +156,7 @@ erDiagram
 
 ### Configuration
 
-The application is configured via `src/main/resources/application.yml`. Supply secrets as environment variables or replace the placeholders directly:
+The application is configured via `src/main/resources/application.yml`. Supply secrets as environment variables in `.env` or in your IDE.
 
 ```yaml
 spring:
@@ -200,32 +187,32 @@ docker compose up -d
 ./mvnw spring-boot:run
 ```
 
-The application will be available at `http://localhost:8080`. A minimal HTML UI is served at `http://localhost:8080/index.html`.
-
 ---
 
-## Core Features
+## Project Structure
 
-- **Email Parsing**: Reads `.eml` files using `simple-java-mail`, extracting metadata, plain text, HTML (stripped via Jsoup) and binary attachments. Duplicate emails are rejected using the `message_id` field.
-- **Attachment Filtering**: Only attachments with MIME types listed under `app.attachments.allowed-mime-types` in `application.yml` are forwarded to the AI (e.g. PDFs, images, plain text). All attachment names are still recorded regardless.
-- **Multimodal AI Analysis**: Forwards both email text and permitted attachments to Gemini in a single multimodal request, receiving a structured JSON response mapped to `AiEmlAnalysis`.
-- **Sentiment & Department Routing**: The AI assigns one of the defined `Sentiment` values (`THREATENING`, `ANGRY`, `FRUSTRATED`, `NEUTRAL`, `SATISFIED`, `POSITIVE`, `UNKNOWN`) and one `Department` value (`SALES`, `LEGAL`, `TECH`, `ACCOUNTING`, `HR`, `UNKNOWN`). A keyword-based fallback (`Sentiment.guessFromTextFallback`) is available if AI analysis is unavailable.
-- **Processing Status Tracking**: Each `EmlFile` and `Ticket` carries a `ProcessingStatus` (`SUCCESS`, `PARTIAL_SUCCESS`, `MANUAL_CHECK_REQUIRED`) reflecting how completely the AI could analyze the email.
-- **Error Handling**: A `GlobalExceptionHandler` maps `ConflictException`, `ResourceNotFoundException` and `ValidationException` to appropriate HTTP status codes with a consistent `ErrorResponse` payload.
-- **Progress Metrics**: The `CustomerDto.Detail` response includes `emailProgress` (ratio of successfully processed emails) and `ticketProgress` (ratio of resolved or closed tickets).
-- DTOs are divided in `.Summary` and `.Detail` to prevent infinite loops as the entities have bidirectional relations. Summary only contains the most important data of this entity while Detail additionally contains the related entity data.
+```text
+├── docker-compose.yml          Infrastructure containerization (PostgreSQL)
+├── mvnw / pom.xml              Maven build configuration and wrappers
+└── src/
+    ├── main/java/.../mail2ticket/
+    │   ├── config/             AttachmentProperties - allowed MIME types loaded from application.yml
+    │   ├── controller/         REST endpoints: UploadController, TicketController, CustomerController, EmlFileController
+    │   ├── domain/
+    │   │   ├── entities/       JPA entities (Ticket, Customer, EmlFile) and enums (Department, Sentiment, TicketStatus, ProcessingStatus)
+    │   │   ├── dto/            API request/response records (TicketDto, CustomerDto, EmlFileDto)
+    │   │   └── internal/       Internal pipeline models (ParsedMail, AiEmlAnalysis, AttachmentData, UploadResponse)
+    │   ├── exception/          GlobalExceptionHandler and custom exceptions (ConflictException, ResourceNotFoundException, ValidationException)
+    │   ├── mapper/             Interfaces and implementations for entity ↔ DTO conversion and AI response parsing
+    │   ├── repositories/       Spring Data JPA repositories (TicketRepository, CustomerRepository, EmlFileRepository)
+    │   └── services/           Business logic: EmailProcessingService orchestrates EmlParserService, MultimodalAiService, CustomerService, EmlFileService, TicketService
+    └── test/                   Unit test suite (currently CustomerServiceImplTest)
+```
 
 ---
 
 ## Planned Updates
 
-- **Storage Service**: The `StorageService` interface is stubbed out for a future update that will upload raw `.eml` files and generated Excel exports to AWS S3, storing the resulting keys on the `EmlFile` and `Ticket` entities respectively.
+- **Storage Service**: The `StorageService` interface is stubbed out for a future update that will upload raw `.eml` files and generated Excel exports to AWS S3, storing the resulting keys on the `EmlFile` and `Ticket` entities.
 - **Expanded Testing**: Unit tests are currently limited to `CustomerServiceImplTest`. Coverage for `TicketService`, `EmlParserService`, `MultimodalAiService` and the mapper layer is planned.
 - **React Frontend**: The focus of this project is on the backend, the UI is currently basic HTML. React is planned for better visualization of the data and endpoints.
-
----
-
-## Notes
-
-- The `ProcessingStatus` on both `EmlFile` and `Ticket` defaults to `MANUAL_CHECK_REQUIRED` and is updated to `SUCCESS` or `PARTIAL_SUCCESS` after the pipeline completes.
-- The `message_id` field on `EmlFile` (sourced from the email server `Message-ID` header) is used to prevent the same email from being uploaded and analyzed twice.
