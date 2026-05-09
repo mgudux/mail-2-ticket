@@ -11,8 +11,8 @@ A backend service built with Spring Boot that converts `.eml` files into support
 - **Email Parsing**: Reads `.eml` files using `simple-java-mail`, extracting metadata, plain text, HTML (stripped via Jsoup) and binary attachments. Duplicate emails are rejected using the `message_id` field.
 - **Multimodal AI Analysis**: Forwards email text and permitted attachments to Gemini in a single request, receiving a structured JSON response mapped to `AiEmlAnalysis`.
 - **Sentiment & Department Routing**: The AI assigns a `Sentiment` (`THREATENING`, `ANGRY`, `FRUSTRATED`, `NEUTRAL`, `SATISFIED`, `POSITIVE`) and a `Department` (`SALES`, `LEGAL`, `TECH`, `ACCOUNTING`, `HR`). A keyword-based fallback (`Sentiment.guessFromTextFallback`) is available if AI analysis fails.
-- **Processing Status Tracking**: Each `EmlFile` and `Ticket` carries a `ProcessingStatus` (`SUCCESS`, `PARTIAL_SUCCESS`, `MANUAL_CHECK_REQUIRED`) reflecting how completely the AI could analyze the email.
-- **Progress Metrics**: `CustomerDto.Detail` includes `emailProgress` and `ticketProgress` — the ratio of successfully processed emails and resolved/closed tickets respectively.
+- **Processing Status Tracking**: Each `EmlFile` and `Ticket` carries a `ProcessingStatus` (`SUCCESS`, `PARTIAL_SUCCESS`, `MANUAL_CHECK_REQUIRED`) reflecting how completely the programm could parse the email and AI could analyze the email.
+- **Progress Metrics**: `CustomerDto.Detail` includes `emailProgress` and `ticketProgress` — the percentage of successfully processed emails and resolved/closed tickets.
 
 ---
 
@@ -65,9 +65,9 @@ erDiagram
         String ticket_title
         String ai_summary
         String ticket_status
-        String department
-        String sentiment
-        String processing_status
+        Department department
+        Sentiment sentiment
+        ProcessingStatus processing_status
         String error_message
         String excel_key
         UUID customer_id FK
@@ -81,7 +81,7 @@ erDiagram
         String subject
         String body
         String raw_email_key
-        String processing_status
+        ProcessingStatus processing_status
         String error_message
         LocalDateTime sent
         UUID customer_id FK
